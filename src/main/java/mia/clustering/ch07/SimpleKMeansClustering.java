@@ -36,6 +36,7 @@ public class SimpleKMeansClustering {
     VectorWritable vec = new VectorWritable();
     for (Vector point : points) {
       vec.set(point);
+      System.out.println(new LongWritable(recNum++) +","+ vec.get());
       writer.append(new LongWritable(recNum++), vec);
     }
     writer.close();
@@ -43,28 +44,32 @@ public class SimpleKMeansClustering {
   
   public static List<Vector> getPoints(double[][] raw) {
     List<Vector> points = new ArrayList<Vector>();
-    for (int i = 0; i < raw.length; i++) {
-      double[] fr = raw[i];
-      Vector vec = new RandomAccessSparseVector(fr.length);
-      vec.assign(fr);
-      points.add(vec);
-    }
+      for (double[] fr : raw) {
+          Vector vec = new RandomAccessSparseVector(fr.length);
+          vec.assign(fr);
+          points.add(vec);
+      }
     return points;
   }
   
   public static void main(String args[]) throws Exception {
     
     int k = 2;
-    
+    boolean result = true ;
     List<Vector> vectors = getPoints(points);
     
     File testData = new File("testdata");
     if (!testData.exists()) {
-      testData.mkdir();
+      result = testData.mkdir();
     }
     testData = new File("testdata/points");
     if (!testData.exists()) {
-      testData.mkdir();
+        result = testData.mkdir();
+    }
+
+    if(!result)
+    {
+        System.out.println("Kindly check that you have set up the environment variables in your project or IDE");
     }
     
     Configuration conf = new Configuration();
@@ -78,6 +83,7 @@ public class SimpleKMeansClustering {
     for (int i = 0; i < k; i++) {
       Vector vec = vectors.get(i);
       Cluster cluster = new Cluster(vec, i, new EuclideanDistanceMeasure());
+      System.out.println(new Text(cluster.getIdentifier()) + "," + cluster);
       writer.append(new Text(cluster.getIdentifier()), cluster);
     }
     writer.close();
